@@ -1,0 +1,9 @@
+package im.lilmouse.chat;
+
+/**
+ * 由 build.sh 依据 local.properties 生成为 Local.java（该生成物不入库）。
+ * 全工程只有这一处引用服务器地址，更新地址在 P.updateManifest/updateApk 里推导。
+ */
+public final class Local {
+    public static final String SERVER = "https://your-server.example/im-api";
+}

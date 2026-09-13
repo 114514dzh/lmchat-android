@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- 圆角方底 -->
+    <path android:fillColor="#1E88E5"
+        android:pathData="M24,6 h60 a18,18 0 0 1 18,18 v44 a18,18 0 0 1 -18,18 H60 l-14,15 v-15 H24 a18,18 0 0 1 -18,-18 V24 a18,18 0 0 1 18,-18 z"/>
+    <!-- 气泡内白点 x3 -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M35,47 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0 z"/>
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M54,47 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0 z"/>
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M73,47 a5,5 0 1 0 10,0 a5,5 0 1 0 -10,0 z"/>
+</vector>

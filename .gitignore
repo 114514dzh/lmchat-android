@@ -1,0 +1,11 @@
+# 本机构建配置：含真实域名/邀请码/签名口令，绝不入库
+local.properties
+# 签名私钥：泄露即可签出可覆盖安装的假 APK
+app.keystore
+*.keystore
+*.jks
+# 构建中间产物与产物
+build/
+dist/
+# 生成的构建配置
+app/src/im/lilmouse/chat/Local.java
