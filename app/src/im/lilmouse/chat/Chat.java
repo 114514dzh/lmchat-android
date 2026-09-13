@@ -85,7 +85,7 @@ public class Chat extends Activity {
 
     private void buildUi() {
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(UI.background(this));
+        root.setBackgroundColor(UI.surface(this));
 
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
@@ -94,12 +94,11 @@ public class Chat extends Activity {
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.HORIZONTAL);
         head.setGravity(Gravity.CENTER_VERTICAL);
-        head.setBackgroundColor(UI.accentHeader(this));
-        head.setElevation(UI.dp(this, 3));
+        head.setBackgroundColor(UI.surface(this));
         int hp = dp(8);
-        head.setPadding(dp(4), hp, dp(12), hp);
+        head.setPadding(dp(6), hp, dp(12), hp);
 
-        TextView back = UI.label(this, "←", 0xFFFFFFFF, 22, false);
+        TextView back = UI.label(this, "←", UI.onSurface(this), 22, false);
         back.setGravity(Gravity.CENTER);
         back.setBackground(UI.rippleOnly());
         back.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { finish(); } });
@@ -115,10 +114,10 @@ public class Chat extends Activity {
         mid.setOrientation(LinearLayout.VERTICAL);
         LinearLayout msp = new LinearLayout(this);
         head.addView(msp, new LinearLayout.LayoutParams(dp(10), -2));
-        TextView title = UI.label(this, avName, 0xFFFFFFFF, 16, true);
+        TextView title = UI.medium(this, avName, UI.onSurface(this), 16.5f);
         title.setSingleLine(true);
         String sub = type == 1 ? "群聊" : conv;
-        TextView st = UI.label(this, sub, 0xCCFFFFFF, 11, false);
+        TextView st = UI.label(this, sub, UI.onSurfaceVariant(this), 11, false);
         st.setTypeface(Typeface.MONOSPACE);
         st.setSingleLine(true);
         mid.addView(title, new LinearLayout.LayoutParams(-2, -2));
@@ -191,7 +190,7 @@ public class Chat extends Activity {
             }
         };
         list.setDivider(null);
-        list.setBackgroundColor(UI.background(this));
+        list.setBackgroundColor(UI.surface(this));
         list.setStackFromBottom(true);
         list.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         ad = new MsgAdapter();
@@ -219,14 +218,14 @@ public class Chat extends Activity {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setBackgroundColor(UI.background(this));
+        bar.setBackgroundColor(UI.surface(this));
         int bp = dp(10);
-        bar.setPadding(bp, bp - dp(2), bp, bp);
+        bar.setPadding(bp + dp(4), bp - dp(2), bp + dp(4), bp);
 
         LinearLayout field = new LinearLayout(this);
         field.setOrientation(LinearLayout.HORIZONTAL);
         field.setGravity(Gravity.CENTER_VERTICAL);
-        field.setBackground(UI.round(this, UI.surface(this), 24));
+        field.setBackground(UI.round(this, UI.scHigh(this), UI.R_PILL));
         int fp = dp(6);
         field.setPadding(dp(14), fp, fp, fp);
         inputBox = new EditText(this);
@@ -237,7 +236,7 @@ public class Chat extends Activity {
         inputBox.setBackground(null);
         inputBox.setMaxLines(4);
         field.addView(inputBox, new LinearLayout.LayoutParams(0, -2, 1));
-        TextView imgBtn = UI.label(this, "图", UI.textSub(this), 15, false);
+        TextView imgBtn = UI.label(this, "图", UI.onSurfaceVariant(this), 15, false);
         imgBtn.setGravity(Gravity.CENTER);
         imgBtn.setBackground(UI.rippleOnly());
         imgBtn.setOnClickListener(new View.OnClickListener() {
@@ -253,10 +252,10 @@ public class Chat extends Activity {
         TextView send = new TextView(this);
         send.setText("➤");
         send.setTextSize(16);
-        send.setTextColor(0xFFFFFFFF);
+        send.setTextColor(UI.onPrimary(this));
         send.setGravity(Gravity.CENTER);
-        send.setBackground(new RippleDrawable(ColorStateList.valueOf(0x44FFFFFF),
-                UI.circle(UI.accent(this)), null));
+        send.setBackground(new RippleDrawable(ColorStateList.valueOf(UI.withAlpha(UI.onPrimary(this), 0x33)),
+                UI.circle(UI.primary(this)), null));
         LinearLayout.LayoutParams slp = new LinearLayout.LayoutParams(dp(44), dp(44));
         slp.leftMargin = dp(8);
         send.setOnClickListener(new View.OnClickListener() {
@@ -271,7 +270,7 @@ public class Chat extends Activity {
         col.addView(bar, new LinearLayout.LayoutParams(-1, -2));
 
         root.addView(col, new FrameLayout.LayoutParams(-1, -1));
-        setContentView(UI.wrap(this, root, UI.accentHeader(this), UI.background(this)));
+        setContentView(UI.wrap(this, root, UI.surface(this), UI.surface(this)));
     }
 
     private void renderHeadAv() {
@@ -454,7 +453,7 @@ public class Chat extends Activity {
         x.setText(t);
         x.setTextSize(13);
         x.setGravity(Gravity.CENTER);
-        x.setTextColor(0xFFFFFFFF);
+        x.setTextColor(UI.onPrimary(this));
         x.setBackground(UI.round(this, UI.accent(this), 16));
         int q = UI.dp(this, 8);
         x.setPadding(q, q, q, q);
@@ -468,6 +467,7 @@ public class Chat extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        UI.syncTheme(this);
         openConv = conv;
         onPoke = refresh;
         reload();
@@ -835,20 +835,19 @@ public class Chat extends Activity {
             }
 
             LinearLayout row = new LinearLayout(Chat.this);
-            row.setPadding(dp(10), dp(2), dp(10), dp(2));
+            row.setPadding(dp(16), dp(3), dp(16), dp(3));
             LinearLayout outer = new LinearLayout(Chat.this);
             LinearLayout bubble = new LinearLayout(Chat.this);
             bubble.setOrientation(LinearLayout.VERTICAL);
-            int ob = UI.outBubble(Chat.this);
-            bubble.setBackground(UI.round(Chat.this, out ? ob : UI.inBubble(Chat.this), dp(20)));
+            bubble.setBackground(UI.bubbleShape(Chat.this,
+                    out ? UI.outBubble(Chat.this) : UI.inBubble(Chat.this), out));
             int pad = dp(10);
             int vpad = dp(7);
             bubble.setPadding(pad, vpad, pad, vpad);
             if (m.qb != null && m.qb.length() > 0) {
                 bubble.addView(quoteView(m.qb), new LinearLayout.LayoutParams(-1, -2));
             }
-            int txtColor = out ? ((BuildOutlined()) ? 0xFF1C1E21 : 0xFF1C1E21) : UI.textMain(Chat.this);
-            if (out && UI.dark(Chat.this) && android.os.Build.VERSION.SDK_INT < 31) txtColor = 0xFFEAF2FF;
+            int txtColor = out ? UI.outBubbleText(Chat.this) : UI.inBubbleText(Chat.this);
 
             if (type == 1 && !out && m.sender != null && m.sender.length() > 0) {
                 String sn = Db.get(Chat.this).contactName(m.sender);
@@ -936,7 +935,7 @@ public class Chat extends Activity {
                 });
             }
             TextView tm = UI.label(Chat.this, UI.timeStr(m.ts),
-                    out && android.os.Build.VERSION.SDK_INT >= 31 ? 0xFF5F6368 : UI.textSub(Chat.this), 10, false);
+                    UI.withAlpha(txtColor, 0x99), 10, false);
             LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(-1, -2);  // 占满气泡宽
             tlp.topMargin = dp(2);
             tm.setGravity(Gravity.RIGHT);

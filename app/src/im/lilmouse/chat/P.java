@@ -35,17 +35,15 @@ public class P {
     public static String name(Context c) { return sp(c).getString("name", ""); }
     public static String auth(Context c) { return acct(c) + ":" + token(c); }
 
-    /** 主题色：0 = 跟随系统(Material You / 默认蓝) */
-    public static final int[] ACCENTS = {
-            0, 0xFF0088CC, 0xFF3F51B5, 0xFF7E57C2, 0xFFE91E63,
-            0xFFEF6C00, 0xFF2E7D32, 0xFF00897B, 0xFF546E7A
-    };
-    public static final String[] ACCENT_NAMES = {
-            "跟随系统", "电报蓝", "靛蓝", "紫罗兰", "玫红",
-            "落日橙", "森林绿", "青碧", "石墨灰"
-    };
-    public static int accentPref(Context c) { return sp(c).getInt("accent", 0); }
-    public static void setAccent(Context c, int argb) { sp(c).edit().putInt("accent", argb).commit(); }
+    // ───── 外观：配色方案 + 明暗模式（见 Palettes / UI）─────
+    /** 配色方案 id，见 Palettes.IDS；默认跟随系统动态取色 */
+    public static String themeId(Context c) { return sp(c).getString("theme", "system"); }
+    public static void setThemeId(Context c, String id) { sp(c).edit().putString("theme", id).commit(); }
+    /** 明暗：0 跟随系统 / 1 浅色 / 2 深色 */
+    public static int darkMode(Context c) { return sp(c).getInt("darkmode", 0); }
+    /** 外观签名：配色方案 + 明暗模式。变化即代表界面需要重建。 */
+    public static String themeSig(Context c) { return themeId(c) + "|" + darkMode(c); }
+    public static void setDarkMode(Context c, int m) { sp(c).edit().putInt("darkmode", m).commit(); }
 
     public static byte[] concat(byte[] a, byte[] b) {
         byte[] r = new byte[a.length + b.length];

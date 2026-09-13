@@ -14,14 +14,14 @@ public class Splash extends Activity {
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
         root.setGravity(Gravity.CENTER);
-        root.setBackgroundColor(UI.accent(this));
+        root.setBackgroundColor(UI.primary(this));
         ImageView logo = new ImageView(this);
         try { logo.setImageResource(R.drawable.ic_launcher); } catch (Throwable t) {}
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
         int sz = UI.dp(this, 84);
         LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(sz, sz);
         root.addView(logo, llp);
-        TextView name = UI.label(this, "LM Chat", 0xFFFFFFFF, 24, true);
+        TextView name = UI.label(this, "LM Chat", UI.onPrimary(this), 24, true);
         name.setGravity(Gravity.CENTER);
         name.setPadding(0, UI.dp(this, 12), 0, 0);
         root.addView(name, new LinearLayout.LayoutParams(-1, -2));

@@ -38,6 +38,19 @@ server            https://host/im-api
 
 因此换服务器只需改 `local.properties` 一行；用户若在 App 内改了服务器地址，自动更新也会跟着切到新地址。
 
+## 主题与配色
+
+配色方案在 **设置 → 外观** 里切换，共 8 种：跟随系统（API 31+ 动态取色）、极简、Claude、秋日、海洋、樱花、春意、纯黑；另有明暗模式三档。
+
+- `Palettes.java` —— 色板常量表（**由脚本生成，勿手改**）。色值取自
+  [RikkaHub](https://github.com/rikkahub/rikkahub)（MIT License）的
+  `ui/theme/presets/*.kt`，是标准 Material Theme Builder 生成的完整 M3 令牌。
+- `UI.java` —— 唯一的取色出口。各界面**不要写死颜色**，一律走
+  `UI.primary()` / `UI.scPrimary()` / `UI.onSurfaceVariant()` 这类取值方法，
+  以及 `UI.card()` / `UI.row()` / `UI.divider()` / `UI.appBar()` 等组件。
+- 换了外观后，`UI.syncTheme(Activity)`（在 `onResume` 里调用）会重建已经
+  创建的界面——只靠 `recreate()` 管不到后台的那些 Activity。
+
 ## 不入库的文件
 
 `.gitignore` 已排除，请勿提交：

@@ -31,95 +31,112 @@ public class Settings extends Activity {
         } catch (Exception e) {}
 
         ScrollView scroll = new ScrollView(this);
-        scroll.setBackgroundColor(UI.background(this));
+        scroll.setBackgroundColor(UI.surface(this));
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        int pad = UI.dp(this, 20);
-        root.setPadding(pad, UI.dp(this, 24), pad, pad);
+        root.setPadding(0, UI.dp(this, 22), 0, UI.dp(this, 36));
 
-        // 头部
-        TextView t = UI.label(this, "设置", UI.textMain(this), 24, true);
+        // 大标题
+        TextView t = UI.medium(this, "设置", UI.onSurface(this), 26f);
+        t.setPadding(UI.dp(this, 22), 0, UI.dp(this, 22), 0);
         root.addView(t, new LinearLayout.LayoutParams(-1, -2));
 
+        // 头像（圆角方形，与列表头像语言一致）
         avSlot = new android.widget.FrameLayout(this);
-        // gravity via layout
-        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(dp(76), dp(76));
+        LinearLayout.LayoutParams alp = new LinearLayout.LayoutParams(dp(84), dp(84));
         alp.gravity = Gravity.CENTER_HORIZONTAL;
-        alp.topMargin = dp(16);
-        avSlot.setBackground(UI.round(this, UI.surface(this), 40));
+        alp.topMargin = dp(22);
+        avSlot.setBackground(UI.round(this, UI.scLow(this), 26));
         avSlot.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { pickAvatar(); } });
         root.addView(avSlot, alp);
-        TextView hint = UI.label(this, "点击头像更换（端到端加密存储）", UI.textSub(this), 10, false);
+        TextView hint = UI.label(this, "点击更换头像 · 端到端加密存储", UI.onSurfaceVariant(this), 11.5f, false);
         hint.setGravity(Gravity.CENTER);
+        hint.setPadding(0, dp(12), 0, 0);
         root.addView(hint, new LinearLayout.LayoutParams(-1, -2));
         renderAv();
 
-        // 我的资料
-        root.addView(section("我的资料"));
+        // ── 我的资料 ──
+        root.addView(UI.sectionTitle(this, "我的资料"));
+        LinearLayout prof = UI.card(this);
         nick = new EditText(this);
         nick.setText(P.name(this));
-        nick.setTextSize(15);
-        nick.setTextColor(UI.textMain(this));
+        nick.setTextSize(UI.T_BODY);
+        nick.setTextColor(UI.onSurface(this));
+        nick.setHintTextColor(UI.onSurfaceVariant(this));
         nick.setSingleLine(true);
-        nick.setBackground(UI.round(this, UI.surface(this), 12));
+        nick.setBackground(UI.round(this, UI.scHigh(this), UI.R_FIELD));
         int fp = UI.dp(this, 14);
         nick.setPadding(fp, fp, fp, fp);
-        root.addView(nick, new LinearLayout.LayoutParams(-1, -2));
-        root.addView(gap(8));
-
-        TextView save = rowBtn("保存昵称", UI.accent(this));
+        LinearLayout nickWrap = new LinearLayout(this);
+        nickWrap.setPadding(dp(16), dp(16), dp(16), dp(8));
+        nickWrap.addView(nick, new LinearLayout.LayoutParams(-1, -2));
+        prof.addView(nickWrap, new LinearLayout.LayoutParams(-1, -2));
+        LinearLayout saveWrap = new LinearLayout(this);
+        saveWrap.setPadding(dp(16), dp(4), dp(16), dp(16));
+        TextView save = UI.primaryBtn(this, "保存昵称", null);
         save.setOnClickListener(new View.OnClickListener() { public void onClick(View v) { saveName(); } });
-        root.addView(save, new LinearLayout.LayoutParams(-1, -2));
+        saveWrap.addView(save, new LinearLayout.LayoutParams(-1, -2));
+        prof.addView(saveWrap, new LinearLayout.LayoutParams(-1, -2));
+        root.addView(UI.cardWrap(this, prof));
 
-        root.addView(section("账号"));
-        View idRow = rowInfo("账号ID（点击复制）", P.acct(this));
-        idRow.setOnClickListener(new View.OnClickListener() {
+        // ── 账号 ──
+        root.addView(UI.sectionTitle(this, "账号"));
+        LinearLayout acct = UI.card(this);
+        acct.addView(cardRow("账号 ID（点击复制）", P.acct(this), false, new View.OnClickListener() {
             public void onClick(View v) {
                 ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                 cm.setPrimaryClip(ClipData.newPlainText("id", P.acct(Settings.this)));
                 Toast.makeText(Settings.this, "已复制", Toast.LENGTH_SHORT).show();
             }
-        });
-        root.addView(idRow, new LinearLayout.LayoutParams(-1, -2));
-        root.addView(gap(6));
-        root.addView(rowInfo("服务器", P.server(this)), new LinearLayout.LayoutParams(-1, -2));
+        }), new LinearLayout.LayoutParams(-1, -2));
+        acct.addView(UI.divider(this, 18));
+        acct.addView(cardRow("服务器", P.server(this), false, null), new LinearLayout.LayoutParams(-1, -2));
+        root.addView(UI.cardWrap(this, acct));
 
-        root.addView(section("外观"));
-        root.addView(accentRow(), new LinearLayout.LayoutParams(-1, -2));
-        root.addView(gap(6));
+        // ── 外观 ──
+        root.addView(UI.sectionTitle(this, "外观"));
+        LinearLayout look = UI.card(this);
+        look.addView(cardRow("配色方案", themeName(), true, new View.OnClickListener() {
+            public void onClick(View v) { pickTheme(); }
+        }), new LinearLayout.LayoutParams(-1, -2));
+        look.addView(UI.divider(this, 18));
+        look.addView(cardRow("深色模式", darkName(), true, new View.OnClickListener() {
+            public void onClick(View v) { pickDark(); }
+        }), new LinearLayout.LayoutParams(-1, -2));
+        root.addView(UI.cardWrap(this, look));
 
-        root.addView(section("安全"));
+        // ── 安全 ──
+        root.addView(UI.sectionTitle(this, "安全"));
+        LinearLayout sec = UI.card(this);
         String ky = Db.get(this).kvGet("kyber:1") != null
                 ? "已完成，可被新版客户端添加"
                 : "未完成：联网打开一次 App 将自动补发";
-        root.addView(rowInfo("预密钥升级", ky), new LinearLayout.LayoutParams(-1, -2));
-        root.addView(gap(6));
+        sec.addView(cardRow("预密钥升级", ky, false, null), new LinearLayout.LayoutParams(-1, -2));
+        root.addView(UI.cardWrap(this, sec));
 
-        root.addView(section("通用"));
-        TextView fix = rowBtn("未读异常修复（全部已读+去重）", 0xFF00897B);
-        fix.setOnClickListener(new View.OnClickListener() {
+        // ── 通用 ──
+        root.addView(UI.sectionTitle(this, "通用"));
+        LinearLayout gen = UI.card(this);
+        gen.addView(cardRow("未读异常修复", "全部已读 + 去重", false, new View.OnClickListener() {
             public void onClick(View v) {
                 int n = Db.get(Settings.this).repairAll();
                 Toast.makeText(Settings.this, "已清理并标记 " + n + " 条", Toast.LENGTH_SHORT).show();
             }
-        });
-        root.addView(fix, new LinearLayout.LayoutParams(-1, -2));
-
-        TextView dbg = rowBtn("复制诊断信息（发给管理员）", 0xFF546E7A);
-        dbg.setOnClickListener(new View.OnClickListener() {
+        }), new LinearLayout.LayoutParams(-1, -2));
+        gen.addView(UI.divider(this, 18));
+        gen.addView(cardRow("复制诊断信息", "发给管理员", false, new View.OnClickListener() {
             public void onClick(View v) { copyDiag(); }
-        });
-        root.addView(dbg, new LinearLayout.LayoutParams(-1, -2));
-
-        TextView upd = rowBtn("检查更新", UI.accent(this));
-        upd.setOnClickListener(new View.OnClickListener() {
+        }), new LinearLayout.LayoutParams(-1, -2));
+        gen.addView(UI.divider(this, 18));
+        gen.addView(cardRow("检查更新", version, true, new View.OnClickListener() {
             public void onClick(View v) { Updater.promptOrToast(Settings.this); }
-        });
-        root.addView(upd, new LinearLayout.LayoutParams(-1, -2));
+        }), new LinearLayout.LayoutParams(-1, -2));
+        root.addView(UI.cardWrap(this, gen));
 
-        root.addView(section("危险区"));
-        TextView logout = rowBtn("退出登录（清除本机全部数据）", 0xFFD32F2F);
-        logout.setOnClickListener(new View.OnClickListener() {
+        // ── 危险区 ──
+        root.addView(UI.sectionTitle(this, "危险区"));
+        LinearLayout dgr = UI.card(this);
+        dgr.addView(cardRow("退出登录", "清除本机全部数据", false, new View.OnClickListener() {
             public void onClick(View v) {
                 new AlertDialog.Builder(Settings.this)
                         .setTitle("退出登录")
@@ -130,11 +147,11 @@ public class Settings extends Activity {
                         .setNegativeButton("取消", null)
                         .show();
             }
-        });
-        root.addView(logout, new LinearLayout.LayoutParams(-1, -2));
+        }), new LinearLayout.LayoutParams(-1, -2));
+        root.addView(UI.cardWrap(this, dgr));
 
         scroll.addView(root, new ScrollView.LayoutParams(-1, -2));
-        setContentView(UI.wrap(this, scroll, UI.background(this), UI.background(this)));
+        setContentView(UI.wrap(this, scroll, UI.surface(this), UI.surface(this)));
     }
 
     private void renderAv() {
@@ -155,7 +172,7 @@ public class Settings extends Activity {
         startActivityForResult(Intent.createChooser(it, "选头像"), REQ_AV);
     }
 
-    @Override protected void onResume() { super.onResume(); if (avSlot != null) renderAv(); Updater.resumeInstall(this); }
+    @Override protected void onResume() { super.onResume(); UI.syncTheme(this); if (avSlot != null) renderAv(); Updater.resumeInstall(this); }
 
     @Override protected void onActivityResult(int req, int res, Intent data) {
         super.onActivityResult(req, res, data);
@@ -197,51 +214,108 @@ public class Settings extends Activity {
         }});
     }
 
-    /** 主题色色板：点选即刻生效 */
-    private View accentRow() {
+    /** 卡片内一行：标题 + 右侧值 + 可选箭头 */
+    private View cardRow(String title, String value, boolean chevron, View.OnClickListener l) {
+        LinearLayout r = new LinearLayout(this);
+        r.setOrientation(LinearLayout.HORIZONTAL);
+        r.setGravity(Gravity.CENTER_VERTICAL);
+        r.setBackground(UI.rippleOnly(this));
+        r.setPadding(dp(18), dp(15), dp(18), dp(15));
+        r.addView(UI.label(this, title, UI.onSurface(this), UI.T_ROW, false),
+                new LinearLayout.LayoutParams(0, -2, 1));
+        if (value != null && value.length() > 0) {
+            TextView v = UI.label(this, value, UI.onSurfaceVariant(this), 13.5f, false);
+            v.setMaxLines(1);
+            v.setEllipsize(android.text.TextUtils.TruncateAt.MIDDLE);
+            LinearLayout.LayoutParams vlp = new LinearLayout.LayoutParams(-2, -2);
+            vlp.leftMargin = dp(12);
+            r.addView(v, vlp);
+        }
+        if (chevron) {
+            TextView c = UI.label(this, "›", UI.onSurfaceVariant(this), 18f, false);
+            LinearLayout.LayoutParams clp = new LinearLayout.LayoutParams(-2, -2);
+            clp.leftMargin = dp(8);
+            r.addView(c, clp);
+        }
+        if (l != null) r.setOnClickListener(l);
+        return r;
+    }
+
+    private String themeName() {
+        String id = P.themeId(this);
+        for (int i = 0; i < Palettes.IDS.length; i++) {
+            if (Palettes.IDS[i].equals(id)) return Palettes.NAMES[i];
+        }
+        return Palettes.NAMES[1];
+    }
+
+    private String darkName() {
+        int m = P.darkMode(this);
+        return m == 1 ? "浅色" : (m == 2 ? "深色" : "跟随系统");
+    }
+
+    /** 取指定配色方案的某个令牌色，用于列表里的预览色块 */
+    private int swatch(String id, int token) {
+        for (int i = 0; i < Palettes.IDS.length; i++) {
+            if (Palettes.IDS[i].equals(id)) {
+                if (i == 0) return UI.tok(this, token);   // 跟随系统：用当前动态色
+                try {
+                    return 0xFF000000 | Integer.parseInt(Palettes.C[i][UI.dark(this) ? 1 : 0][token], 16);
+                } catch (Throwable t) { return 0xFF808080; }
+            }
+        }
+        return 0xFF808080;
+    }
+
+    /** 配色方案选择：每项带 主色/容器色/表面色 三色预览 */
+    private void pickTheme() {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setBackground(UI.round(this, UI.surface(this), 12));
-        int p = dp(14);
-        box.setPadding(p, dp(12), p, dp(12));
-        int cur = P.accentPref(this);
-        String curName = "跟随系统";
-        for (int i = 0; i < P.ACCENTS.length; i++) if (P.ACCENTS[i] == cur) curName = P.ACCENT_NAMES[i];
-        box.addView(UI.label(this, "主题色 · " + curName, UI.textSub(this), 11, false),
-                new LinearLayout.LayoutParams(-2, -2));
-
-        android.widget.HorizontalScrollView hs = new android.widget.HorizontalScrollView(this);
-        hs.setHorizontalScrollBarEnabled(false);
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setPadding(0, dp(10), 0, dp(2));
-        for (int i = 0; i < P.ACCENTS.length; i++) {
-            final int argb = P.ACCENTS[i];
-            int show = argb == 0
-                    ? (android.os.Build.VERSION.SDK_INT >= 31
-                        ? getColor(android.R.color.system_accent1_200)
-                        : (UI.dark(this) ? 0xFF8AB4F8 : 0xFF0088CC))
-                    : argb;
-            TextView dot = new TextView(this);
-            dot.setText(argb == cur ? "✓" : (argb == 0 ? "A" : ""));
-            dot.setTextColor(UI.dark(this) ? 0xFF111111 : 0xFFFFFFFF);
-            dot.setTextSize(15);
-            dot.setTypeface(Typeface.DEFAULT_BOLD);
-            dot.setGravity(Gravity.CENTER);
-            dot.setBackground(UI.circle(show));
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(40), dp(40));
-            lp.rightMargin = dp(10);
-            dot.setOnClickListener(new View.OnClickListener() {
+        int p = dp(8);
+        box.setPadding(p, p, p, p);
+        final AlertDialog dlg = new AlertDialog.Builder(this).setTitle("配色方案").setView(box).create();
+        final String cur = P.themeId(this);
+        for (int i = 0; i < Palettes.IDS.length; i++) {
+            final String id = Palettes.IDS[i];
+            LinearLayout r = new LinearLayout(this);
+            r.setOrientation(LinearLayout.HORIZONTAL);
+            r.setGravity(Gravity.CENTER_VERTICAL);
+            r.setBackground(UI.rippleOnly(this));
+            r.setPadding(dp(14), dp(13), dp(14), dp(13));
+            int[] tks = {UI.TK_PRIMARY, UI.TK_PRIMARY_CONTAINER, UI.TK_SC_HIGH};
+            for (int tk : tks) {
+                TextView dot = new TextView(this);
+                dot.setBackground(UI.circle(swatch(id, tk)));
+                LinearLayout.LayoutParams dlp = new LinearLayout.LayoutParams(dp(22), dp(22));
+                dlp.rightMargin = dp(5);
+                r.addView(dot, dlp);
+            }
+            TextView nm = UI.label(this, Palettes.NAMES[i], UI.onSurface(this), UI.T_ROW, false);
+            LinearLayout.LayoutParams nlp = new LinearLayout.LayoutParams(0, -2, 1);
+            nlp.leftMargin = dp(14);
+            r.addView(nm, nlp);
+            if (id.equals(cur)) r.addView(UI.label(this, "✓", UI.primary(this), 17f, true));
+            r.setOnClickListener(new View.OnClickListener() {
                 public void onClick(View v) {
-                    P.setAccent(Settings.this, argb);
+                    P.setThemeId(Settings.this, id);
+                    dlg.dismiss();
                     recreate();
                 }
             });
-            row.addView(dot, lp);
+            box.addView(r, new LinearLayout.LayoutParams(-1, -2));
         }
-        hs.addView(row);
-        box.addView(hs, new LinearLayout.LayoutParams(-1, -2));
-        return box;
+        dlg.show();
+    }
+
+    private void pickDark() {
+        final String[] names = {"跟随系统", "浅色", "深色"};
+        new AlertDialog.Builder(this).setTitle("深色模式")
+                .setItems(names, new android.content.DialogInterface.OnClickListener() {
+                    public void onClick(android.content.DialogInterface d, int w) {
+                        P.setDarkMode(Settings.this, w);
+                        recreate();
+                    }
+                }).show();
     }
 
     private void copyDiag() {

@@ -55,65 +55,67 @@ public class Conversations extends Activity {
 
     private void buildUi() {
         FrameLayout root = new FrameLayout(this);
-        root.setBackgroundColor(UI.background(this));
+        root.setBackgroundColor(UI.surface(this));
 
         LinearLayout col = new LinearLayout(this);
         col.setOrientation(LinearLayout.VERTICAL);
 
-        // ---- 顶栏：标题 + 我的ID(点击复制) + ⋮菜单 ----
+        // ---- 顶栏：标题 + 账号ID(点击复制) + 状态点 + 搜索 + 菜单 + 头像 ----
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.HORIZONTAL);
         head.setGravity(Gravity.CENTER_VERTICAL);
-        int hp = UI.dp(this, 12);
-        head.setPadding(UI.dp(this, 16), hp, UI.dp(this, 4), hp);
-        head.setBackground(UI.ripple(UI.accentHeader(this)));
-        head.setElevation(UI.dp(this, 3));
-        head.setLongClickable(true);
+        head.setBackgroundColor(UI.surface(this));
+        head.setPadding(UI.dp(this, 22), UI.dp(this, 15), UI.dp(this, 10), UI.dp(this, 9));
+
+        LinearLayout mid = new LinearLayout(this);
+        mid.setOrientation(LinearLayout.VERTICAL);
+        mid.setBackground(UI.rippleOnly(this));
+        TextView title = UI.medium(this, "消息", UI.onSurface(this), 25f);
+        subtitle = UI.label(this, P.acct(this), UI.onSurfaceVariant(this), 11f, false);
+        subtitle.setTypeface(Typeface.MONOSPACE);
+        subtitle.setPadding(0, UI.dp(this, 3), 0, 0);
+        mid.addView(title, new LinearLayout.LayoutParams(-2, -2));
+        mid.addView(subtitle, new LinearLayout.LayoutParams(-2, -2));
+        mid.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                cm.setPrimaryClip(ClipData.newPlainText("id", P.acct(Conversations.this)));
+                Toast.makeText(Conversations.this, "账号 ID 已复制", Toast.LENGTH_SHORT).show();
+            }
+        });
+        head.addView(mid, new LinearLayout.LayoutParams(0, -2, 1));
+
+        connDot = UI.label(this, "●", UI.onSurfaceVariant(this), 11, false);
+        connDot.setPadding(0, 0, UI.dp(this, 4), 0);
+        connDot.setGravity(Gravity.CENTER_VERTICAL);
+        head.addView(connDot, new LinearLayout.LayoutParams(-2, -1));
+
+        TextView searchBtn = UI.iconBtn(this, "🔍");
+        searchBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { startActivity(new Intent(Conversations.this, Search.class)); }
+        });
+        head.addView(searchBtn, new LinearLayout.LayoutParams(UI.dp(this, 38), UI.dp(this, 38)));
+
+        TextView more = UI.iconBtn(this, "⋮");
+        more.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) { showMore(v); }
+        });
+        head.addView(more, new LinearLayout.LayoutParams(UI.dp(this, 38), UI.dp(this, 38)));
 
         headAv = new android.widget.FrameLayout(this);
         headAv.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { startActivity(new Intent(Conversations.this, Settings.class)); }
         });
-        LinearLayout.LayoutParams halp = new LinearLayout.LayoutParams(UI.dp(this, 38), -1);
-        halp.rightMargin = UI.dp(this, 10);
+        LinearLayout.LayoutParams halp = new LinearLayout.LayoutParams(UI.dp(this, 38), UI.dp(this, 38));
+        halp.leftMargin = UI.dp(this, 6);
         head.addView(headAv, halp);
         renderHeadAv();
-        head.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                cm.setPrimaryClip(ClipData.newPlainText("id", P.acct(Conversations.this)));
-                subtitle.setText("已复制 " + P.acct(Conversations.this));
-                Toast.makeText(Conversations.this, "账号ID已复制", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        LinearLayout mid = new LinearLayout(this);
-        mid.setOrientation(LinearLayout.VERTICAL);
-        TextView title = UI.label(this, P.name(this), 0xFFFFFFFF, 20, true);
-        subtitle = UI.label(this, P.acct(this), 0xCCFFFFFF, 11, false);
-        subtitle.setTypeface(Typeface.MONOSPACE);
-        mid.addView(title, new LinearLayout.LayoutParams(-2, -2));
-        mid.addView(subtitle, new LinearLayout.LayoutParams(-2, -2));
-        head.addView(mid, new LinearLayout.LayoutParams(0, -2, 1));
-
-        connDot = UI.label(this, "●", 0xFFFFFFFF, 12, false);
-        connDot.setPadding(0, 0, UI.dp(this, 6), 0);
-        connDot.setGravity(Gravity.CENTER_VERTICAL);
-        head.addView(connDot, new LinearLayout.LayoutParams(-2, -1));
-
-        TextView more = UI.label(this, "⋮", 0xFFFFFFFF, 26, false);
-        more.setGravity(Gravity.CENTER);
-        more.setBackground(UI.rippleOnly());
-        more.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) { showMore(v); }
-        });
-        head.addView(more, new LinearLayout.LayoutParams(UI.dp(this, 46), -1));
         col.addView(head, new LinearLayout.LayoutParams(-1, -2));
 
         // ---- 会话列表 ----
         list = new ListView(this);
         list.setDivider(null);
-        list.setBackgroundColor(UI.background(this));
+        list.setBackgroundColor(UI.surface(this));
         ad = new ConvAdapter();
         list.setAdapter(ad);
         TextView empty = new TextView(this);
@@ -140,11 +142,11 @@ public class Conversations extends Activity {
         TextView fab = new TextView(this);
         fab.setText("+");
         fab.setTextSize(26);
-        fab.setTextColor(0xFFFFFFFF);
+        fab.setTextColor(UI.onPrimary(this));
         fab.setGravity(Gravity.CENTER);
         fab.setElevation(UI.dp(this, 6));
-        fab.setBackground(new RippleDrawable(ColorStateList.valueOf(0x44FFFFFF),
-                UI.circle(UI.accent(this)), null));
+        fab.setBackground(new RippleDrawable(ColorStateList.valueOf(UI.withAlpha(UI.onPrimary(this), 0x33)),
+                UI.circle(UI.primary(this)), null));
         fab.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) { showFabMenu(v); }
         });
@@ -154,7 +156,7 @@ public class Conversations extends Activity {
         flp.bottomMargin = UI.dp(this, 18);
         root.addView(fab, flp);
 
-        setContentView(UI.wrap(this, root, UI.accentHeader(this), UI.background(this)));
+        setContentView(UI.wrap(this, root, UI.surface(this), UI.surface(this)));
     }
 
     private void showMore(View anchor) {
@@ -289,6 +291,7 @@ public class Conversations extends Activity {
 
     @Override protected void onResume() {
         super.onResume();
+        UI.syncTheme(this);
         reload();
         maybeCheckUpdate();
         Updater.resumeInstall(this);
@@ -435,66 +438,49 @@ public class Conversations extends Activity {
             final Db.Conv c = data.get(p);
             String nm = dispName(c);
 
-            // 外层留白 + 卡片
-            LinearLayout root = new LinearLayout(Conversations.this);
-            root.setOrientation(LinearLayout.VERTICAL);
-            root.setPadding(UI.dp(Conversations.this, 12), UI.dp(Conversations.this, 3),
-                    UI.dp(Conversations.this, 12), UI.dp(Conversations.this, 3));
+            LinearLayout row = UI.row(Conversations.this);
 
-            LinearLayout card = new LinearLayout(Conversations.this);
-            card.setOrientation(LinearLayout.HORIZONTAL);
-            card.setGravity(Gravity.CENTER_VERTICAL);
-            card.setBackground(UI.ripple(UI.surface(Conversations.this)));
-            android.graphics.drawable.GradientDrawable bgc = UI.round(Conversations.this, UI.surface(Conversations.this), 20);
-            card.setBackground(new android.graphics.drawable.RippleDrawable(
-                    android.content.res.ColorStateList.valueOf(0x14000000), bgc, null));
-            card.setPadding(UI.dp(Conversations.this, 14), UI.dp(Conversations.this, 10),
-                    UI.dp(Conversations.this, 12), UI.dp(Conversations.this, 10));
-
-            card.addView(UI.avatar(Conversations.this, avatars.get(c.id), nm, c.id, 48),
+            row.addView(UI.avatar(Conversations.this, avatars.get(c.id), nm, c.id, 52),
                     new LinearLayout.LayoutParams(-2, -2));
-            LinearLayout sp2 = new LinearLayout(Conversations.this);
-            sp2.setMinimumWidth(UI.dp(Conversations.this, 12));
-            card.addView(sp2, new LinearLayout.LayoutParams(UI.dp(Conversations.this, 12), -2));
 
             LinearLayout midc = new LinearLayout(Conversations.this);
             midc.setOrientation(LinearLayout.VERTICAL);
-            TextView n = UI.label(Conversations.this, nm, UI.textMain(Conversations.this), 17, true);
+            TextView n = UI.medium(Conversations.this, nm, UI.onSurface(Conversations.this), 16f);
             TextView l = UI.label(Conversations.this, c.last == null ? c.id : c.last,
-                    UI.textSub(Conversations.this), 14, false);
+                    UI.onSurfaceVariant(Conversations.this), 14f, false);
             l.setSingleLine(true);
-            l.setMaxWidth(UI.dp(Conversations.this, 220));
             l.setEllipsize(android.text.TextUtils.TruncateAt.END);
             l.setPadding(0, UI.dp(Conversations.this, 2), 0, 0);
-            midc.addView(n, new LinearLayout.LayoutParams(-2, -2));
-            midc.addView(l, new LinearLayout.LayoutParams(-2, -2));
-            card.addView(midc, new LinearLayout.LayoutParams(0, -2, 1));
+            midc.addView(n, new LinearLayout.LayoutParams(-1, -2));
+            midc.addView(l, new LinearLayout.LayoutParams(-1, -2));
+            LinearLayout.LayoutParams mlp = new LinearLayout.LayoutParams(0, -2, 1);
+            mlp.leftMargin = UI.dp(Conversations.this, 14);
+            row.addView(midc, mlp);
 
             LinearLayout right = new LinearLayout(Conversations.this);
             right.setOrientation(LinearLayout.VERTICAL);
             right.setGravity(Gravity.RIGHT);
-            TextView t = UI.label(Conversations.this, UI.timeStr(c.ts), UI.textSub(Conversations.this), 12, false);
+            TextView t = UI.label(Conversations.this, UI.timeStr(c.ts),
+                    UI.onSurfaceVariant(Conversations.this), 12, false);
             right.addView(t, new LinearLayout.LayoutParams(-2, -2));
             if (c.unread > 0) {
                 TextView badge = new TextView(Conversations.this);
                 badge.setText(c.unread > 99 ? "99+" : String.valueOf(c.unread));
                 badge.setTextSize(11);
                 badge.setTypeface(Typeface.DEFAULT_BOLD);
-                badge.setTextColor(0xFFFFFFFF);
+                badge.setTextColor(UI.onPrimary(Conversations.this));
                 badge.setGravity(Gravity.CENTER);
-                badge.setBackground(UI.round(Conversations.this, UI.accent(Conversations.this), 11));
+                badge.setBackground(UI.round(Conversations.this, UI.primary(Conversations.this), UI.R_PILL));
                 badge.setMinWidth(UI.dp(Conversations.this, 22));
-                badge.setMaxWidth(UI.dp(Conversations.this, 44));
-                badge.setPadding(UI.dp(Conversations.this, 6), 0, UI.dp(Conversations.this, 6), 0);
                 badge.setMinHeight(UI.dp(Conversations.this, 22));
+                badge.setPadding(UI.dp(Conversations.this, 7), 0, UI.dp(Conversations.this, 7), 0);
                 LinearLayout.LayoutParams blp = new LinearLayout.LayoutParams(-2, -2);
                 blp.topMargin = UI.dp(Conversations.this, 6);
+                blp.gravity = Gravity.RIGHT;
                 right.addView(badge, blp);
             }
-            card.addView(right, new LinearLayout.LayoutParams(-2, -2));
-
-            root.addView(card, new LinearLayout.LayoutParams(-1, -2));
-            return root;
+            row.addView(right, new LinearLayout.LayoutParams(-2, -2));
+            return row;
         }
   }
 }
