@@ -18,6 +18,10 @@ get() { grep -E "^$1=" local.properties | head -1 | cut -d= -f2- ; }
 SRV=$(get server)
 KSPASS=$(get keystore.pass)
 [ -n "$KSPASS" ] || { echo "local.properties 缺少 keystore.pass"; exit 1; }
+if [ -z "$SRV" ]; then
+  echo "提示: local.properties 的 server 为空 —— 构建出的包不含默认服务器地址，"
+  echo "      安装后需在首次配置界面手动填写。"
+fi
 
 # ---------- 生成 Local.java（不入库）----------
 mkdir -p app/src/im/lilmouse/chat
